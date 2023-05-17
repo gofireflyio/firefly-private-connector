@@ -1,0 +1,27 @@
+# values.yaml
+
+image:
+  repository: your-registry/flytube
+  tag: latest
+  pullPolicy: IfNotPresent
+
+env:
+  user: ""
+  remoteHost: ""
+  sourcePort: ""
+  targetHost: ""
+  targetPort: ""
+  certificatePath: ""
+  remotePort: "22"
+  sleepDuration: "5"
+
+certificate:
+  data: ""
+
+resources:
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+  requests:
+    cpu: "200m"
+    memory: "256Mi"

@@ -1,0 +1,61 @@
+# deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "flytube.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "flytube.name" . }}
+    helm.sh/chart: {{ include "flytube.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "flytube.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "flytube.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: user
+              value: "{{ .Values.env.user }}"
+            - name: remoteHost
+              value: "{{ .Values.env.remoteHost }}"
+            - name: sourcePort
+              value: "{{ .Values.env.sourcePort }}"
+            - name: targetHost
+              value: "{{ .Values.env.targetHost }}"
+            - name: targetPort
+              value: "{{ .Values.env.targetPort }}"
+            - name: certificatePath
+              value: "{{ .Values.env.certificatePath }}"
+            - name: remotePort
+              value: "{{ .Values.env.remotePort }}"
+            - name: sleepDuration
+              value: "{{ .Values.env.sleepDuration }}"
+          {{- if .Values.certificate.enabled }}
+          volumeMounts:
+            - name: certificateVolume
+              mountPath: {{ .Values.env.certificatePath }}
+              readOnly: true
+          {{- end }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+      volumes:
+        - name: certificateVolume
+          secret:
+            secretName: {{ include "flytube.fullname" . }}CertificateSecret
