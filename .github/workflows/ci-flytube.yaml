@@ -1,38 +1,53 @@
-name: CI FLYTUBE Deploy
-
+name: Build FLYTUBE Dockerhub
 on:
   workflow_dispatch:
     inputs:
-      env:
-        type: choice
-        description: 'Environment'
+      tag:
+        description: 'Version Tag for the FLYTUBE Docker Image'
         required: true
-        options:
-          - 'dev'
-          - 'stag'
-          - 'prod'
-          - 'team-code'
-          - 'team-cloud'
-        default: 'dev'
+        default: '1.0.0'
 jobs:
-  call-dockerhub-workflow:
-    uses: infralight/.github/.github/workflows/
-    with:
-      
-      run-tests: false
-      branch: ${{ github.ref_name }}
-      ecr-prefix: ''
-      event_name: ${{ github.event_name }}
-      app-name: flytube
-      latest: true
-      environment: ${{ inputs.env }}
-    secrets:
-      GLOBAL_PAT_USERNAME: ${{ secrets.GLOBAL_PAT_USERNAME }}
-      GLOBAL_PAT: ${{ secrets.GLOBAL_PAT }}
-      CI_AWS_CRED_KEY: ${{ secrets.CI_AWS_CRED_KEY }}
-      CI_AWS_CRED_SECRET: ${{ secrets.CI_AWS_CRED_SECRET }}
-      CI_ACCOUNT_ID: ${{ secrets.CI_ACCOUNT_ID }}
-      CI_REGION: ${{ secrets.CI_REGION }}
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
 
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Get current time
+      uses: gerred/actions/current-time@master
+      id: current-time
+
+    - name: Build and push image to prod
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: |
+          infralightio/flytube:${{ github.event.inputs.tag }}
+          infralightio/flytube:latest
+        labels: |
+          org.opencontainers.image.created=${{ steps.current-time.outputs.time }}
+          org.opencontainers.image.authors=Infralight
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.version=${{ github.event.inputs.tag }}
+
+    - name: Slack Notification
+      if: ${{ success() }}
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_ICON: https://assets-global.website-files.com/5d514fd9493b0575f03520bd/5d8e0b39fd776a3c238e8753_icons8_infinity_large_filled_2.svg
+        SLACK_MESSAGE: "FLYTUBE image pushed to infralightio/flytube:${{ github.event.inputs.tag }}"
+        SLACK_TITLE: "FLYTUBE image pushed to infralightio/flytube:${{ github.event.inputs.tag }}"
+        SLACK_USERNAME: cicdBot
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
