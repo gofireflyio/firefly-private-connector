@@ -1,0 +1,38 @@
+name: CI FLYTUBE Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        type: choice
+        description: 'Environment'
+        required: true
+        options:
+          - 'dev'
+          - 'stag'
+          - 'prod'
+          - 'team-code'
+          - 'team-cloud'
+        default: 'dev'
+jobs:
+  call-dockerhub-workflow:
+    uses: infralight/.github/.github/workflows/
+    with:
+      
+      run-tests: false
+      branch: ${{ github.ref_name }}
+      ecr-prefix: ''
+      event_name: ${{ github.event_name }}
+      app-name: flytube
+      latest: true
+      environment: ${{ inputs.env }}
+    secrets:
+      GLOBAL_PAT_USERNAME: ${{ secrets.GLOBAL_PAT_USERNAME }}
+      GLOBAL_PAT: ${{ secrets.GLOBAL_PAT }}
+      CI_AWS_CRED_KEY: ${{ secrets.CI_AWS_CRED_KEY }}
+      CI_AWS_CRED_SECRET: ${{ secrets.CI_AWS_CRED_SECRET }}
+      CI_ACCOUNT_ID: ${{ secrets.CI_ACCOUNT_ID }}
+      CI_REGION: ${{ secrets.CI_REGION }}
+
+
+
