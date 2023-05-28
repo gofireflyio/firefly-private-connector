@@ -14,7 +14,7 @@ A reverse SSH tunnel establishes a secure connection from a remote server to a l
 
 2. Clone this repository:
 
-```helm repo add firefly https://gofireflyio.github.io/flytube```
+```helm repo add flytube https://gofireflyio.github.io/flytube```
 
 3. Fill in the required values in `values.yaml` file:
 
