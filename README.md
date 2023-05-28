@@ -23,7 +23,7 @@ certificate:
     data: GIVEN_BY_FIREFLY
 env:
     user: "username"
-    remoteHost: "relay.gofirefly.io
+    remoteHost: "relay.gofirefly.io"
     remotePort: 22
     sourcePort: 8080
     targetHost: "target-host"
