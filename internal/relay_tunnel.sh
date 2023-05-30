@@ -60,7 +60,7 @@ fi
 
 while true
 do
-    if ssh -i "${CERTIFICATE_PATH}" -N -R "${SOURCE_PORT}:${TARGET_HOST}:${TARGET_PORT}" -p "${REMOTE_PORT}" "${USER}@${REMOTE_HOST}"; then
+    if ssh -i "${CERTIFICATE_PATH}" -N -R "0.0.0.0:${SOURCE_PORT}:${TARGET_HOST}:${TARGET_PORT}" -p "${REMOTE_PORT}" "${USER}@${REMOTE_HOST}"; then
         echo "Reverse tunnel created successfully."
     else
         echo "Failed to create reverse tunnel. Retrying in ${SLEEP_DURATION} seconds..."
