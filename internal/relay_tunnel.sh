@@ -44,6 +44,20 @@ if [[ -z "${CERTIFICATE_PATH}" ]]; then
     exit 1
 fi
 
+# Function to check if a command is installed
+check_command_installed() {
+    local command_name="$1"
+    if ! command -v "$command_name" &> /dev/null; then
+        echo "Error: $command_name is not installed. Please install $command_name before running this script."
+        exit 1
+    fi
+}
+
+# Verify SSH, nslookup, and netcat (nc) are installed
+check_command_installed "ssh"
+check_command_installed "nslookup"
+check_command_installed "nc"
+
 # Function to check if the target host and port are accessible
 check_target_accessibility() {
     nc -z -w 2 "${TARGET_HOST}" "${TARGET_PORT}" >/dev/null 2>&1
@@ -58,12 +72,72 @@ else
     exit 1
 fi
 
-while true
-do
-    if ssh -i "${CERTIFICATE_PATH}" -N -R "0.0.0.0:${SOURCE_PORT}:${TARGET_HOST}:${TARGET_PORT}" -p "${REMOTE_PORT}" "${USER}@${REMOTE_HOST}"; then
-        echo "Reverse tunnel created successfully."
-    else
-        echo "Failed to create reverse tunnel. Retrying in ${SLEEP_DURATION} seconds..."
-        sleep "${SLEEP_DURATION}"
+# Perform nslookup on the target host and iterate over the resolved addresses
+resolved_addresses=$(nslookup "${REMOTE_HOST}" | awk '/^Address: / { print $2 }')
+echo "Creating ssh tunnels"
+
+# Dictionary to store tunnel PIDs and resolved addresses
+declare -A tunnel_pids
+
+# Function to cleanup tunnel processes
+cleanup() {
+    echo "Cleaning tunnel processes"
+    for pid in "${!tunnel_pids[@]}"; do
+        if [[ -d "/proc/$pid" ]]; then
+            kill "$pid" &> /dev/null
+            echo "Killed tunnel process with PID: $pid"
+        fi
+    done
+}
+
+# Trap exit signal and perform cleanup
+trap cleanup EXIT
+
+# Function to create SSH tunnel
+create_ssh_tunnel() {
+    local resolved_address="$1"
+    echo "Creating reverse tunnel for ${resolved_address}..."
+    ssh -i "${CERTIFICATE_PATH}" -N -R "0.0.0.0:${SOURCE_PORT}:${TARGET_HOST}:${TARGET_PORT}" -p "${REMOTE_PORT}" "${USER}@${resolved_address}" &
+    tunnel_pids[$!]=$resolved_address
+}
+
+# Iterate over resolved addresses and create SSH tunnels
+for resolved_address in $resolved_addresses; do
+    create_ssh_tunnel "$resolved_address"
+done
+
+echo "All tunnels created successfully"
+
+# Continuously monitor the background tunnel processes
+while true; do
+     # Perform nslookup on the target host and iterate over the resolved addresses
+    resolved_addresses=$(nslookup "${REMOTE_HOST}" | awk '/^Address: / { print $2 }')
+
+    # Check if there are new IP addresses that don't exist in tunnel_pids dictionary
+    for resolved_address in $resolved_addresses; do
+        if [[ ! " ${tunnel_pids[@]} " =~ " ${resolved_address} " ]]; then
+            create_ssh_tunnel "$resolved_address"
+        fi
+    done
+
+    # Check if any tunnel processes have died
+    dead_tunnels=0
+    for pid in "${!tunnel_pids[@]}"; do
+        if ! kill -0 "$pid" &> /dev/null; then
+            ((dead_tunnels++))
+            unset "tunnel_pids[$pid]"
+        fi
+    done
+
+    if [[ $dead_tunnels -eq ${#tunnel_pids[@]} ]]; then
+        echo "All tunnel processes have died. Exiting."
+        exit 1
     fi
+
+    for ((i=dead_tunnels; i>0; i--)); do
+        resolved_address="${tunnel_pids[$pid]}"
+        create_ssh_tunnel "$resolved_address"
+    done
+
+    sleep "${SLEEP_DURATION}"
 done
