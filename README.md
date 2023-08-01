@@ -23,7 +23,7 @@ certificate:
     data: GIVEN_BY_FIREFLY
 env:
     user: "username"
-    remoteHost: "relay.gofirefly.io"
+    remoteHost: "firefly-relay.firefly.ai "
     remotePort: 22
     sourcePort: 8080
     targetHost: "target-host"
@@ -70,7 +70,7 @@ module "ec2_instance" {
   key_pair_name        = "my-keypair"
   security_group_id    = "sg-12345678"
   user                 = "myuser"
-  remote_host          = "relay.gofirefly.io"
+  remote_host          = "firefly-relay.firefly.ai"
   remote_port          = 22
   source_port          = 8080
   target_host          = "target-host"
