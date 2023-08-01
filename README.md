@@ -4,8 +4,12 @@ This repository provides a solution for creating a reverse SSH tunnel between a 
 
 ## Background
 
-A reverse SSH tunnel establishes a secure connection from a remote server to a local server, allowing traffic to be forwarded from the local server to the remote server. In the context of Firefly Relay, this enables the local service to communicate with the Firefly Relay frontend by forwarding traffic through the established reverse SSH tunnel.
+A reverse SSH tunnel establishes a secure connection from a remote server to a local server, allowing traffic to be forwarded from the local server to the remote server. In the context of Firefly Relay, 
+ this enables the local service to communicate with the Firefly Relay frontend by forwarding traffic through the established reverse SSH tunnel.
 
+ ![image](https://github.com/gofireflyio/flytube/assets/31516429/f40336ea-9762-4b9c-bd0b-eddc399e7d3c)
+
+ 
 ## Installation
 
 ### Helm
