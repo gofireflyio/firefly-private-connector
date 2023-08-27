@@ -3,8 +3,8 @@ Description=Firefly Relay
 After=network.target
 
 [Service]
-ExecStart=/root/.ssh/relay.sh ec2-user firefly-relay.gofirefly.io 31234 gitlab.internal.com 80 /root/.ssh/sshd.pem
-WorkingDirectory=/root/.ssh
+ExecStart=/usr/local/bin/relay_tunnel.sh  <tenant_user> firefly-relay.firefly.ai <assigned_port> <target ip address> <target port> /certs/
+WorkingDirectory=/usr/local/bin/
 Restart=always
 User=root
 

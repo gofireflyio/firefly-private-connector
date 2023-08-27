@@ -26,21 +26,21 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: user
+            - name: USER
               value: "{{ .Values.env.user }}"
-            - name: remoteHost
+            - name: REMOTE_HOST
               value: "{{ .Values.env.remoteHost }}"
-            - name: sourcePort
+            - name: SOURCE_PORT
               value: "{{ .Values.env.sourcePort }}"
-            - name: targetHost
+            - name: TARGET_HOST
               value: "{{ .Values.env.targetHost }}"
-            - name: targetPort
+            - name: TARGET_PORT
               value: "{{ .Values.env.targetPort }}"
             - name: certificatePath
               value: "{{ .Values.env.certificatePath }}"
             - name: remotePort
               value: "{{ .Values.env.remotePort }}"
-            - name: sleepDuration
+            - name: SLEEP_DURATION
               value: "{{ .Values.env.sleepDuration }}"
           {{- if .Values.certificate.enabled }}
           volumeMounts:
