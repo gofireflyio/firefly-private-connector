@@ -16,7 +16,9 @@ env:
   sleepDuration: "5"
 
 certificate:
-  data: ""
+  private: ""
+  public: ""
+  signed: ""
 
 resources:
   limits:
