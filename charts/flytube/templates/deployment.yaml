@@ -3,10 +3,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "flytube.fullname" . }}
+  name: {{ include "flytube.name" . }}
   labels:
     app.kubernetes.io/name: {{ include "flytube.name" . }}
-    helm.sh/chart: {{ include "flytube.chart" . }}
+    helm.sh/chart: {{ .Chart.Name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
@@ -23,31 +23,29 @@ spec:
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: {{ include "flytube.image" . | quote}}
+          imagePullPolicy: {{ include "flytube.imagePullPolicy" . | quote }}
           env:
             - name: USER
-              value: "{{ .Values.env.user }}"
+              value: "{{ required "user value is required" .Values.env.user }}"
             - name: REMOTE_HOST
-              value: "{{ .Values.env.remoteHost }}"
+              value: "{{ required "remoteHost value is required" .Values.env.remoteHost }}"
             - name: SOURCE_PORT
-              value: "{{ .Values.env.sourcePort }}"
+              value: "{{required "sourcePort value is required" .Values.env.sourcePort }}"
             - name: TARGET_HOST
-              value: "{{ .Values.env.targetHost }}"
+              value: "{{required "targetHost value is required" .Values.env.targetHost }}"
             - name: TARGET_PORT
-              value: "{{ .Values.env.targetPort }}"
-            - name: certificatePath
-              value: "{{ .Values.env.certificatePath }}"
-            - name: remotePort
-              value: "{{ .Values.env.remotePort }}"
+              value: "{{required "targetPort value is required" .Values.env.targetPort }}"
+            - name: CERTIFICATE_PATH
+              value: "/certs"
+            - name: REMOTE_PORT
+              value: {{ default .Values.env.remotePort  "22" | quote}}
             - name: SLEEP_DURATION
-              value: "{{ .Values.env.sleepDuration }}"
-          {{- if .Values.certificate.enabled }}
+              value: {{ default .Values.env.sleepDuration  "5" | quote}}
           volumeMounts:
-            - name: certificateVolume
-              mountPath: {{ .Values.env.certificatePath }}
+            - name: certificates
+              mountPath: "/certs"
               readOnly: true
-          {{- end }}
           resources:
             limits:
               cpu: {{ .Values.resources.limits.cpu }}
@@ -56,6 +54,7 @@ spec:
               cpu: {{ .Values.resources.requests.cpu }}
               memory: {{ .Values.resources.requests.memory }}
       volumes:
-        - name: certificateVolume
+        - name: certificates
           secret:
-            secretName: {{ include "flytube.fullname" . }}CertificateSecret
+            secretName: {{ include "flytube.secretname" . }}
+            defaultMode: 0600

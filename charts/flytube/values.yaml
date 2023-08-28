@@ -1,9 +1,8 @@
 # values.yaml
-
 image:
-  repository: your-registry/flytube
+  repository: infralightio/flytube
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 env:
   user: ""
@@ -11,14 +10,6 @@ env:
   sourcePort: ""
   targetHost: ""
   targetPort: ""
-  certificatePath: ""
-  remotePort: "22"
-  sleepDuration: "5"
-
-certificate:
-  private: ""
-  public: ""
-  signed: ""
 
 resources:
   limits:
