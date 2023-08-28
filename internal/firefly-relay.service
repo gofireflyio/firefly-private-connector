@@ -3,7 +3,7 @@ Description=Firefly Relay
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/relay_tunnel.sh  <tenant_user> firefly-relay.firefly.ai <assigned_port> <target ip address> <target port> /certs/
+ExecStart=/usr/local/bin/relay_tunnel.sh <tenant_user> firefly-relay.firefly.ai <assigned_port> <target ip address> <target port> /certs/
 WorkingDirectory=/usr/local/bin/
 Restart=always
 User=root

@@ -23,16 +23,14 @@ A reverse SSH tunnel establishes a secure connection from a remote server to a l
 3. Fill in the required values in `values.yaml` file:
 
 ```yaml
-certificate:
-    data: GIVEN_BY_FIREFLY
+
 env:
-    user: "username"
+    user: "<supplied username>"
     remoteHost: "firefly-relay.firefly.ai "
     remotePort: 22
     sourcePort: 8080
-    targetHost: "target-host"
+    targetHost: "<target host ip/>"
     targetPort: 80
-    certificatePath: "secrets/ssh-certificate"
     sleepDuration: 5
 
 image:
@@ -48,8 +46,8 @@ resources:
     memory: "256Mi"
 
 ```
-
-4. Deploy the application using Helm:
+4. Copy supplied certificates into the `certs` directory.
+5. Deploy the application using Helm:
 
 ```helm install flytube firefly/flytube --values values.yaml --namespace=firefly --create-namespace```
 
