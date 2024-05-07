@@ -4,24 +4,24 @@ on:
   pull_request:
     types: ["opened", "reopened", "edited", "synchronize"]
     branches: ["main"]
-
+    
 jobs:
   firefly-pr-compliance-checks:
     runs-on: ubuntu-latest
     steps:
     - name: Validate PR and Branch Name Associated with JIRA Ticket Prefix
       run: |
-        branch_name=$( echo "\\$\\{{ github.head_ref }}" | awk '{print tolower($0)}' )
-        pr_title=$( echo \\$\\{{ github.event.pull_request.title }} | awk '{print tolower($0)}' )
-
+        branch_name=$( echo "${{ github.head_ref }}" | awk '{print tolower($0)}' )
+        pr_title=$( echo ${{ github.event.pull_request.title }} | awk '{print tolower($0)}' )
+        
         if [[ ! "$branch_name" =~ ^infl\-[0-9]{4}.+$ ]]; then
-          echo "Your Branch Name: \\$\\{{ github.head_ref }}"
+          echo "Your Branch Name: ${{ github.head_ref }}"
           echo [COMPLIANCE-ERROR] Please ensure that your branch name starts with the appropriate JIRA ticket prefix.
           exit 1
         fi
 
         if [[ ! "$pr_title" =~ ^infl(\-| )[0-9]{4}.+$ ]]; then
-          echo "Your Pull Request Title: \\$\\{ github.event.pull_request.title }}"
+          echo "Your Pull Request Title: ${{ github.event.pull_request.title }}"
           echo [COMPLIANCE-ERROR] Please ensure that your PR title starts with the appropriate JIRA ticket prefix.
           exit 1
         fi
