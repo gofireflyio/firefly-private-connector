@@ -32,9 +32,11 @@ jobs:
       - name: generate-env
         if: steps.gitleaks.outputs.exitcode == 1
         id: generate-env
-        run: echo "OUTPUTLEAKS=$(awk 1 ORS='\\n' gitleaks.txt)" >> $GITHUB_ENV
+        run: |
+          echo "OUTPUTLEAKS=$(awk 1 ORS='\\n' gitleaks.txt)" >> $GITHUB_ENV
       - name: Send to Slack if sensitive data found
         if: steps.gitleaks.outputs.exitcode == 1
+        id: slack-send
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_ICON: https://avatars.slack-edge.com/2022-03-12/3228412958213_797a01c4347dd0e18e8f_102.png
@@ -46,3 +48,7 @@ jobs:
           ENABLE_ESCAPES: false
           SLACK_WEBHOOK: ${{ secrets.CI_GITLEAKS_SLACK }}
           SLACK_CHANNEL: '#security'
+      - name: Print Gitleaks when Slack step fails
+        if: steps.slack-send.outputs.outcome == 'failure'
+        run:
+          cat gitleaks.txt
