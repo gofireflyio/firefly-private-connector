@@ -22,7 +22,7 @@ jobs:
         id: gitleaks
         run: |
           set +e
-          gitleaks detect -v --no-color > gitleaks.txt
+          gitleaks -c .github/gitleaks.toml detect -v --no-color > gitleaks.txt
           echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
       - name: generate-env
@@ -38,7 +38,7 @@ jobs:
           SLACK_ICON: https://avatars.slack-edge.com/2022-03-12/3228412958213_797a01c4347dd0e18e8f_102.png
           SLACK_COLOR: ${{ steps.gitleaks.outputs.exitcode == 1 && 'failure' || 'success'}}
           SLACK_FOOTER: "Firefly's gitleaks github action check"
-          SLACK_CUSTOM_PAYLOAD: '{"text": "*Author: _${{ github.actor}}_*\n\n*Ref*\n${{ github.ref }}\n\n*Actions URL*\nhttps://github.com/infralight/cerebro/actions/runs/${{ github.run_id }}\n\n*Gitleaks Detected Sensitive Data!*\n```${{ env.OUTPUTLEAKS }}```"}'
+          SLACK_CUSTOM_PAYLOAD: '{"text": "*Author: _${{ github.actor}}_*\n\n*Ref*\n${{ github.ref }}\n\n*Actions URL*\nhttps://github.com/infralight/${{ github.event.repository.name }}/actions/runs/${{ github.run_id }}\n\n*Gitleaks Detected Sensitive Data!*\n```${{ env.OUTPUTLEAKS }}```"}'
           SLACK_TITLE: 'Gitleaks Detected Sensitive Data!'
           SLACK_USERNAME: gitleakBot
           ENABLE_ESCAPES: false
