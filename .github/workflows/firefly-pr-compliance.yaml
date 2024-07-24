@@ -10,18 +10,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Validate PR and Branch Name Associated with JIRA Ticket Prefix
+      env:
+        branch_name: ${{ github.head_ref }}
+        pr_title: ${{ github.event.pull_request.title }}
       run: |
-        branch_name=$( echo "${{ github.head_ref }}" | awk '{print tolower($0)}' )
-        pr_title=$( echo ${{ github.event.pull_request.title }} | awk '{print tolower($0)}' )
+        branch_name_lo=$( echo "$branch_name" | awk '{print tolower($0)}' )
+        pr_title_lo=$( echo "$pr_title" | awk '{print tolower($0)}' )
+        exit_code=0
         
-        if [[ ! "$branch_name" =~ ^infl\-[0-9]{4}.*$ ]]; then
-          echo "Your Branch Name: ${{ github.head_ref }}"
-          echo [COMPLIANCE-ERROR] Please ensure that your branch name starts with the appropriate Jira ticket prefix.
-          exit 1
+        if [[ ! "$branch_name_lo" =~ ^infl\-[0-9]{4}.*$ ]]; then
+          echo
+          echo "[COMPLIANCE ERROR - BRANCH NAME]"
+          echo "Branch Name: $branch_name"
+          echo "-> Please ensure that your branch name starts with the appropriate Jira ticket prefix (e.g. INFL-1234-branch-name)"
+          exit_code=1
         fi
 
-        if [[ ! "$pr_title" =~ ^infl(\-| )[0-9]{4}.*$ ]]; then
-          echo "Your Pull Request Title: ${{ github.event.pull_request.title }}"
-          echo [COMPLIANCE-ERROR] Please ensure that your PR title starts with the appropriate Jira ticket prefix.
-          exit 1
+        if [[ ! "$pr_title_lo" =~ ^infl(\-| )[0-9]{4}.*$ ]]; then
+          echo
+          echo "[COMPLIANCE ERROR - PULL REQUEST TITLE]"
+          echo "Pull Request Title: $pr_title"
+          echo "-> Please ensure that your PR title starts with the appropriate Jira ticket prefix (e.g. INFL-1234-pull-request-title)"
+          exit_code=1
         fi
+
+        exit $exit_code
