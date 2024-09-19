@@ -1,7 +1,7 @@
 apiVersion: v2
-name: flytube
+name: firefly-private-connector
 description: A Helm chart for Firefly's Kubernetes Relay Agent.
   The deployment contains a single pod that creates SSH reverse tunnel between.
 type: application
-version: 0.2.1
+version: 0.2.2
 appVersion: "1.0.0"
