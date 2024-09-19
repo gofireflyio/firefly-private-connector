@@ -1,11 +1,9 @@
-# deployment.yaml
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "flytube.name" . }}
+  name: {{ include "fpc.name" . }}
   labels:
-    app.kubernetes.io/name: {{ include "flytube.name" . }}
+    app.kubernetes.io/name: {{ include "fpc.name" . }}
     helm.sh/chart: {{ .Chart.Name }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
@@ -13,18 +11,18 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "flytube.name" . }}
+      app.kubernetes.io/name: {{ include "fpc.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "flytube.name" . }}
+        app.kubernetes.io/name: {{ include "fpc.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: {{ include "flytube.image" . | quote}}
-          imagePullPolicy: {{ include "flytube.imagePullPolicy" . | quote }}
+          image: {{ include "fpc.image" . | quote}}
+          imagePullPolicy: {{ include "fpc.imagePullPolicy" . | quote }}
           env:
             - name: USER
               value: "{{ required "user value is required" .Values.env.user }}"
@@ -47,14 +45,22 @@ spec:
               mountPath: "/certs"
               readOnly: true
           resources:
-            limits:
-              cpu: {{ .Values.resources.limits.cpu }}
-              memory: {{ .Values.resources.limits.memory }}
-            requests:
-              cpu: {{ .Values.resources.requests.cpu }}
-              memory: {{ .Values.resources.requests.memory }}
+{{- toYaml .Values.resources | nindent 10 }}
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{- toYaml .Values.nodeSelector | nindent 8 }}
+{{- end }}
+{{- if .Values.tolerations }}
+      tolerations:
+{{- range .Values.tolerations }}
+        - effect: "{{ .effect }}"
+          key: "{{ .key }}"
+          operator: "{{ .operator }}"
+          value: "{{ .value }}"
+{{- end }}
+{{- end }}
       volumes:
         - name: certificates
           secret:
-            secretName: {{ include "flytube.secretname" . }}
+            secretName: {{ include "fpc.secretname" . }}
             defaultMode: 0600
