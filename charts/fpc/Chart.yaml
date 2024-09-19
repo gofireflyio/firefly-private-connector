@@ -1,5 +1,5 @@
 apiVersion: v2
-name: firefly-private-connector
+name: fpc
 description: A Helm chart for Firefly's Kubernetes Relay Agent.
   The deployment contains a single pod that creates SSH reverse tunnel between.
 type: application
