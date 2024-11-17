@@ -4,24 +4,15 @@
 - [ ] Code maintenance
 - [ ] Performance enhancement
 
-* **What is the current behavior?** (You can also link to an open issue here)
+* **Description of the changes included in this PR (In case of a bug fix, please highlight the expected behaviour vs the observed one)**
 
 
-* **What is the new behavior?**
-
-
-* **Does this PR introduce a breaking change?** (What changes might users need to make in their application due to this PR?)
+* **Does this PR introduce a breaking change?**
 
 
 * **Please declare that your PR fulfills these requirements:**
-- [ ] Tests for the changes have been added (please elaborate on the test cases and testing approach)
-- [ ] Internal docs have been added / updated (please add a link)
-- [ ] External docs have been added / updated (please add a link)
+- [ ] Unit tests covering my changes are included
+- [ ] I successfully ran my code on my local setup
+- [ ] This branch has been successfully deployed in a development environment
 - [ ] My code follows the project's style guidelines and has been linted
-
-
-* **Post merge steps:**
-- [ ] Additional tests need to be added to the automation suite (please link ticket)
-- [ ] Minor/Major version should be bumped
-
-* **Other information**:
+- [ ] Documentation have been added / updated (please add a link)
