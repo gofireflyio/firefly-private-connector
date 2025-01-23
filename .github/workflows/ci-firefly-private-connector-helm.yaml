@@ -1,0 +1,13 @@
+name: CI FIREFLY-PRIVATE-CONNECTOR-HELM Helm Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  call-release-helm-workflow:
+    uses: infralight/.github/.github/workflows/git-release-helm.yaml@master
+    with:
+      branch: ${{ github.ref_name }}
