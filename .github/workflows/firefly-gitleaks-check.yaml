@@ -1,4 +1,4 @@
-name: Check Gitleaks
+name: FIREFLY-CHECK-GITLEAKS
 on:
   push:
     branches:
