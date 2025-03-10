@@ -1,4 +1,4 @@
-  name: Build FIREFLY-PRIVATE-CONNECTOR Dockerhub
+name: Build FIREFLY-PRIVATE-CONNECTOR Dockerhub
 on:
   workflow_dispatch:
     inputs:
