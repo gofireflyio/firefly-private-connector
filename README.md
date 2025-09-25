@@ -19,6 +19,7 @@ A reverse SSH tunnel establishes a secure connection from a remote server to a l
 2. Clone this repository:
 
 ```helm repo add flytube https://gofireflyio.github.io/firefly-private-connector```
+
 ```helm repo update```
 
 3. Fill in the required values in `values.yaml` file:
@@ -47,8 +48,11 @@ resources:
     memory: "256Mi"
 
 ```
+
 4. Copy supplied certificates into the `certs` directory.
+
 ```kubectl create secret generic fpc-certificates --from-file=id_rsa=certs/id_rsa --from-file=id_rsa.pub=certs/id_rsa.pub --from-file=id_rsa.signed=certs/id_rsa.signed --namespace=firefly```
+
 5. Deploy the application using Helm:
 
 ```helm install flytube flytube/fpc --values cmd/relay/values.yaml --namespace=firefly --create-namespace```
