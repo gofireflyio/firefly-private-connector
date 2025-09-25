@@ -20,6 +20,7 @@ A reverse SSH tunnel establishes a secure connection from a remote server to a l
 
 ```helm repo add flytube https://gofireflyio.github.io/firefly-private-connector```
 ```helm repo update```
+
 3. Fill in the required values in `values.yaml` file:
 
 ```yaml
