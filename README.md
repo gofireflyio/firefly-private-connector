@@ -55,7 +55,7 @@ resources:
 
 5. Deploy the application using Helm:
 
-```helm install flytube flytube/fpc --values cmd/relay/values.yaml --namespace=firefly --create-namespace```
+```helm install flytube flytube/fpc --values values.yaml --namespace=firefly --create-namespace```
 
 
 ### Terraform
