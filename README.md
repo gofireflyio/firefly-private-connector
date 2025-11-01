@@ -1,4 +1,4 @@
-# Firefly Private Connector
+# Firefly Private Connector - Flytube
 
 The Firefly Private Connector establishes a secure, outbound-only reverse SSH tunnel from your environment to the Firefly platform, enabling Firefly to access private resources without requiring inbound firewall rules or exposing internal services to the internet.
 
@@ -10,7 +10,7 @@ This connector enables secure communication between the Firefly platform and res
 
 1. **Outbound Connection**: The connector establishes an SSH connection from your network to `firefly-relay.firefly.ai:22`
 2. **Certificate Authentication**: Uses SSH certificate-based authentication with certificates provided by Firefly
-3. **Reverse Tunnel**: Creates a reverse tunnel binding a remote port on Firefly's relay to a target service in your network
+3. **Reverse Tunnel**: Creates a reverse tunnel binding a remote port on Firefly's relay server
 4. **Private Integration Access**: After the relay is established, all private integrations such as on-premises VCS tools, private Terraform Enterprise instances, internal Kubernetes clusters, or other tools that store infrastructure state are accessed through this tunnel, allowing the Firefly platform to connect securely to your environment
 
 ### Technical Architecture
@@ -21,17 +21,18 @@ This connector enables secure communication between the Firefly platform and res
 ```
 Your Network                                Firefly Infrastructure
 ┌──────────────────────────┐               ┌──────────────────────────┐
+│                          │               │                          │
+│  ┌──────────────────┐    │               │  ┌──────────────────┐    │
+│  │ Private Connector│────┼───SSH Port 22─┼─→│  Relay Server    │    │
+│  │   (Container)    │    │   Outbound    │  │                  │    │
+│  └──────────────────┘    │               │  └──────────────────┘    │
+│                          │               │          ↑               │
 │  Private Resources       │               │  Firefly Platform        │
-│  (VCS, TFE, K8s, etc.)   │               │          ↓               │
-│          ↓               │               │     Source Port          │
-│    Target Port (443)     │               │          ↓               │
-│          ↓               │               │  ┌──────────────────┐    │
-│  ┌──────────────────┐    │               │  │  Relay Server    │    │
-│  │ Private Connector│────┼───SSH Port 22─┼─→│                  │    │
-│  │  (This Service)  │    │               │  └──────────────────┘    │
-│  └──────────────────┘    │               │                          │
+│  (VCS, TFE, K8s, etc.)   │               │  connects via relay      │
+│                          │               │                          │
 └──────────────────────────┘               └──────────────────────────┘
-     Outbound Only                              No Inbound Required
+     Outbound Only                              
+     No ingress needed                          Reverse SSH Tunnel
 ```
 
 **SSH Tunnel Command:**
@@ -52,7 +53,7 @@ ssh -N -R 0.0.0.0:<SOURCE_PORT>:<TARGET_HOST>:<TARGET_PORT> \
 - **Process monitoring**: Detects dead tunnels and recreates them automatically
 
 **Network Requirements:**
-- Outbound HTTPS/443 access to target services within your network
+- Outbound HTTPS/443 access to target host (provided by Firefly team)
 - Outbound SSH/22 access to `firefly-relay.firefly.ai` (may require firewall allowlist)
 - DNS resolution capability for `firefly-relay.firefly.ai`
 
@@ -66,7 +67,7 @@ ssh -N -R 0.0.0.0:<SOURCE_PORT>:<TARGET_HOST>:<TARGET_PORT> \
 - Configuration values provided by the Firefly team:
   - `user` - Unique identifier for your connector instance
   - `sourcePort` - Port on Firefly relay that will forward to your target
-  - `targetHost` - Internal hostname/IP of the service Firefly should access
+  - `targetHost` - Target hostname provided by Firefly for tunnel endpoint
 
 ## Installation
 
