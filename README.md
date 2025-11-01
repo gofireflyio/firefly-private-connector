@@ -15,7 +15,7 @@ This connector enables secure communication between the Firefly platform and res
 
 ### Technical Architecture
 
-
+📖 **For a detailed explanation of the architecture including the complete data flow, hairpin routing pattern, and step-by-step request/response cycle, see [ARCHITECTURE.md](ARCHITECTURE.md).**
 
 **Connection Flow:**
 ```
