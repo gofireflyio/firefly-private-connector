@@ -4,15 +4,18 @@ image:
   pullPolicy: Always
 
 env:
-  user: ""
-  remoteHost: ""
-  sourcePort: ""
-  targetHost: ""
-  targetPort: ""
+  user: "< SUPPLIED BY FIREFLY TEAM >"
+  remoteHost: "firefly-relay.firefly.ai"
+  targetHost: "< SUPPLIED BY FIREFLY TEAM >"
+  remotePort: "22"
+  sourcePort: "< SUPPLIED BY FIREFLY TEAM >"
+  targetPort: "443"
+  sleepDuration: 5
 
 resources:
   limits:
+    cpu: "1"
     memory: "512Mi"
   requests:
-    cpu: "200m"
+    cpu: "500m"
     memory: "256Mi"
