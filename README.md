@@ -31,7 +31,7 @@ Your Network                                Firefly Infrastructure
 │  │  (This Service)  │    │               │  └──────────────────┘    │
 │  └──────────────────┘    │               │                          │
 └──────────────────────────┘               └──────────────────────────┘
-     Outbound Only                              No Inbound Required
+     Outbound Only                              
 ```
 
 **SSH Tunnel Command:**
