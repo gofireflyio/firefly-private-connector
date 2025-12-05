@@ -9,6 +9,7 @@ TARGET_PORT="${5:-$TARGET_PORT}"
 CERTIFICATE_PATH="${6:-$CERTIFICATE_PATH}"
 REMOTE_PORT="${7:-$REMOTE_PORT}"
 SLEEP_DURATION="${8:-5}"
+KEEPALIVE_INTERVAL="${9:-${KEEPALIVE_INTERVAL:-300}}"  # Keepalive interval in seconds (default 5 minutes)
 
 # Set default value of remote port if not defined
 REMOTE_PORT="${REMOTE_PORT:-22}"
@@ -79,6 +80,9 @@ echo "Creating ssh tunnels"
 # Dictionary to store tunnel PIDs and resolved addresses
 declare -A tunnel_pids
 
+# PID for keepalive process
+keepalive_pid=""
+
 # Function to cleanup tunnel processes
 cleanup() {
     echo "Cleaning tunnel processes"
@@ -88,6 +92,28 @@ cleanup() {
             echo "Killed tunnel process with PID: $pid"
         fi
     done
+    # Kill keepalive process if running
+    if [[ -n "$keepalive_pid" ]] && kill -0 "$keepalive_pid" &> /dev/null; then
+        kill "$keepalive_pid" &> /dev/null
+        echo "Killed keepalive process with PID: $keepalive_pid"
+    fi
+}
+
+# Function to send keepalive probes to TARGET_HOST:TARGET_PORT
+start_keepalive() {
+    echo "Starting keepalive process for ${TARGET_HOST}:${TARGET_PORT} (interval: ${KEEPALIVE_INTERVAL}s)"
+    while true; do
+        sleep "${KEEPALIVE_INTERVAL}"
+        # Send a minimal probe to keep the connection alive
+        echo -n "" | nc -w 2 "${TARGET_HOST}" "${TARGET_PORT}" >/dev/null 2>&1
+        if [[ $? -eq 0 ]]; then
+            echo "Keepalive probe to ${TARGET_HOST}:${TARGET_PORT} succeeded"
+        else
+            echo "Keepalive probe to ${TARGET_HOST}:${TARGET_PORT} failed"
+        fi
+    done &
+    keepalive_pid=$!
+    echo "Keepalive process started with PID: $keepalive_pid"
 }
 
 # Trap exit signal and perform cleanup
@@ -107,6 +133,9 @@ for resolved_address in $resolved_addresses; do
 done
 
 echo "All tunnels created successfully"
+
+# Start keepalive process for TARGET_HOST:TARGET_PORT
+start_keepalive
 
 # Continuously monitor the background tunnel processes
 while true; do
