@@ -97,7 +97,7 @@ trap cleanup EXIT
 create_ssh_tunnel() {
     local resolved_address="$1"
     echo "Creating reverse tunnel for ${resolved_address}..."
-    ssh -o StrictHostKeyChecking=no -i "${CERTIFICATE_PATH}/id_rsa" -i "${CERTIFICATE_PATH}/id_rsa.signed" -N -R "0.0.0.0:${SOURCE_PORT}:${TARGET_HOST}:${TARGET_PORT}" -p "${REMOTE_PORT}" "${USER}@${resolved_address}" &
+    ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ServerAliveCountMax=3 -i "${CERTIFICATE_PATH}/id_rsa" -i "${CERTIFICATE_PATH}/id_rsa.signed" -N -R "0.0.0.0:${SOURCE_PORT}:${TARGET_HOST}:${TARGET_PORT}" -p "${REMOTE_PORT}" "${USER}@${resolved_address}" &
     tunnel_pids[$!]=$resolved_address
 }
 
