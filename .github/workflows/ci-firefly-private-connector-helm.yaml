@@ -8,6 +8,6 @@ on:
 
 jobs:
   call-release-helm-workflow:
-    uses: infralight/.github/.github/workflows/git-release-helm.yaml@master
+    uses: infralight/.github/.github/workflows/git-release-helm.yaml@5a6cb3462fa8ca2fb0a7564a03f5f6c475fa6306 # master
     with:
       branch: ${{ github.ref_name }}
