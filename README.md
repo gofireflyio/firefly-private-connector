@@ -59,7 +59,7 @@ ssh -N -R 0.0.0.0:<SOURCE_PORT>:<TARGET_HOST>:<TARGET_PORT> \
 
 ## Prerequisites
 
-- Kubernetes cluster (for Helm deployment) or AWS account (for Terraform deployment)
+- Kubernetes cluster (for Helm deployment), AWS account (for Terraform deployment), or any Linux virtual machine or bare-metal server (for Docker or systemd deployment)
 - SSH certificates provided by the Firefly team:
   - `id_rsa` - Private SSH key
   - `id_rsa.pub` - Public SSH key
@@ -162,6 +162,110 @@ terraform plan
 terraform apply
 ```
 
+### Docker on a Virtual Machine (Any Platform)
+
+This method works on any Linux virtual machine or bare-metal server, including VMware vSphere/ESXi, Azure VMs, GCP Compute Engine, Oracle Cloud, or on-premises infrastructure.
+
+**Requirements:**
+- A Linux VM (Ubuntu, RHEL, CentOS, Amazon Linux, Debian, etc.)
+- Docker installed (or `openssh-client`, `nslookup`, and `nc` for systemd-only deployment)
+- Outbound access to `firefly-relay.firefly.ai` on port 22 and to the target host on port 443
+- SSH certificates provided by the Firefly team
+
+**1. Copy the SSH certificates to the VM:**
+```bash
+mkdir -p /opt/firefly/certs
+# Copy id_rsa, id_rsa.pub, and id_rsa.signed to /opt/firefly/certs/
+chmod 600 /opt/firefly/certs/*
+```
+
+**2. Run the connector using Docker:**
+```bash
+docker run -d \
+  --name firefly-connector \
+  --restart always \
+  -e USER="< SUPPLIED BY FIREFLY TEAM >" \
+  -e REMOTE_HOST="firefly-relay.firefly.ai" \
+  -e SOURCE_PORT="< SUPPLIED BY FIREFLY TEAM >" \
+  -e TARGET_HOST="< SUPPLIED BY FIREFLY TEAM >" \
+  -e TARGET_PORT="443" \
+  -e REMOTE_PORT="22" \
+  -e SLEEP_DURATION="5" \
+  -v /opt/firefly/certs:/certs:ro \
+  infralightio/flytube:latest
+```
+
+**3. Verify the connector is running:**
+```bash
+docker logs -f firefly-connector
+```
+
+Look for `All tunnels created successfully` in the output.
+
+#### Systemd Deployment (Without Docker)
+
+If Docker is not available, you can run the connector directly using systemd.
+
+**1. Install dependencies:**
+
+*Debian/Ubuntu:*
+```bash
+apt-get update && apt-get install -y openssh-client dnsutils netcat-openbsd
+```
+
+*RHEL/CentOS/Amazon Linux:*
+```bash
+yum install -y openssh-clients bind-utils nmap-ncat
+```
+
+**2. Copy the tunnel script and certificates:**
+```bash
+cp internal/relay_tunnel.sh /usr/local/bin/relay_tunnel.sh
+chmod +x /usr/local/bin/relay_tunnel.sh
+
+mkdir -p /opt/firefly/certs
+# Copy id_rsa, id_rsa.pub, and id_rsa.signed to /opt/firefly/certs/
+chmod 600 /opt/firefly/certs/*
+```
+
+**3. Create the systemd service:**
+```bash
+cat > /etc/systemd/system/firefly-relay.service << 'EOF'
+[Unit]
+Description=Firefly Relay
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/relay_tunnel.sh
+Environment=USER=< SUPPLIED BY FIREFLY TEAM >
+Environment=REMOTE_HOST=firefly-relay.firefly.ai
+Environment=SOURCE_PORT=< SUPPLIED BY FIREFLY TEAM >
+Environment=TARGET_HOST=< SUPPLIED BY FIREFLY TEAM >
+Environment=TARGET_PORT=443
+Environment=REMOTE_PORT=22
+Environment=CERTIFICATE_PATH=/opt/firefly/certs
+Environment=SLEEP_DURATION=5
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+**4. Enable and start the service:**
+```bash
+systemctl daemon-reload
+systemctl enable firefly-relay
+systemctl start firefly-relay
+```
+
+**5. Verify:**
+```bash
+systemctl status firefly-relay
+journalctl -u firefly-relay -f
+```
+
 ## Configuration Parameters
 
 | Parameter | Description | Example | Provided By |
@@ -192,7 +296,7 @@ All traffic from Firefly to these services routes through the established tunnel
 **Authentication:**
 - Certificate-based SSH authentication (no passwords)
 - Certificates should be rotated according to your security policy
-- Private keys are stored as Kubernetes secrets or AWS EC2 user data (encrypted at rest)
+- Private keys are stored as Kubernetes secrets, AWS EC2 user data (encrypted at rest), or local files with restricted permissions (0600) on VMs
 
 **Network Isolation:**
 - Connector only requires outbound network access
@@ -227,7 +331,7 @@ All traffic from Firefly to these services routes through the established tunnel
 - Confirm `firefly-relay.firefly.ai` is not blocked by network policies
 
 **Unable to access services through Firefly:**
-- Verify connector pod/instance is running: `kubectl get pods -n firefly` or check EC2 instance state
+- Verify connector is running: `kubectl get pods -n firefly` (Helm), check EC2 instance state (Terraform), `docker ps` or `systemctl status firefly-relay` (VM)
 - Confirm tunnel is established: check connector logs for "All tunnels created successfully"
 - Verify target service is running and accessible from connector's location
 
