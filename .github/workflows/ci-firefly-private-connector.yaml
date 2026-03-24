@@ -25,7 +25,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Get current time
-      uses: gerred/actions/current-time@master
+      uses: gerred/actions/current-time@c3950138908da5fe2b904f1dc39535d565f1547f # master
       id: current-time
 
     - name: Build and push image to prod
