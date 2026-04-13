@@ -106,10 +106,9 @@ image:
 
 resources:
   limits:
-    cpu: "1"
     memory: "512Mi"
   requests:
-    cpu: "500m"
+    cpu: "200m"
     memory: "256Mi"
 ```
 
